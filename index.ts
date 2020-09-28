@@ -1,11 +1,9 @@
 import getFontInfo from './getFontInfo';
-const write = require('write')
-import convertFontToPath from './convertFontToPath';
 
-export const isDev = !process.env.AWS_REGION;
+const isDev = !process.env.AWS_REGION;
 
 
-const websiteUrl = 'https://www.artstation.com/pranetoid';
+const websiteUrl = 'https://www.pixiv.net/';
 
 (async () => {
 

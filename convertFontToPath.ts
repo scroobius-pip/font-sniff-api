@@ -12,6 +12,7 @@ export default async (fontUrl: string, text: string): Promise<string> => {
         return `<svg viewBox="0 0 500 500"  xmlns="http://www.w3.org/2000/svg">${svg}</svg>`
     } catch (error) {
         console.error('Could not get svg')
+        console.log(error)
         return ''
     } finally {
 

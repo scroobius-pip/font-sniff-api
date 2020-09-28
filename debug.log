@@ -1,1 +1,4 @@
 [0926/141914.524:ERROR:file_io.cc(90)] ReadExactly: expected 36, observed 0
+[0926/203134.592:ERROR:file_io_win.cc(162)] CreateFile C:\Users\sim04\AppData\Local\Temp\puppeteer_dev_chrome_profile-NzggW8\Crashpad\settings.dat: The system cannot find the path specified. (0x3)
+[0926/203134.595:ERROR:file_io_win.cc(171)] CreateFile C:\Users\sim04\AppData\Local\Temp\puppeteer_dev_chrome_profile-NzggW8\Crashpad\reports\b04d5b96-e268-4277-9510-f1d65038a853.dmp: The system cannot find the path specified. (0x3)
+[0926/203134.595:ERROR:crash_report_exception_handler.cc(97)] PrepareNewCrashReport failed
