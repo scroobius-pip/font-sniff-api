@@ -21,7 +21,8 @@ export async function getOptions(isDev: boolean) {
         };
     } else {
         options = {
-            args: chrome.args,
+
+            args: [...chrome.args, '--disable-web-security'],
             executablePath: await chrome.executablePath,
             headless: chrome.headless,
         };

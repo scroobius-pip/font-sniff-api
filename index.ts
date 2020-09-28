@@ -3,7 +3,7 @@ import getFontInfo from './getFontInfo';
 const isDev = !process.env.AWS_REGION;
 
 
-const websiteUrl = 'https://www.pixiv.net/';
+const websiteUrl = 'https://www.relate.app/';
 
 (async () => {
 
