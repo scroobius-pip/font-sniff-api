@@ -3,14 +3,18 @@ import getFontInfo from '../getFontInfo'
 const normalizeUrl = require('normalize-url');
 
 module.exports = async (req, res) => {
+
+
     try {
         const url = req.query?.url
         if (!url) {
+
             return res.json({
                 error: 'No Url Specified'
             })
         }
         const fontInfo = await getFontInfo(normalizeUrl(url), isDev)
+        res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate')
         return res.json({
             ...fontInfo,
             error: ''
