@@ -1,4 +1,4 @@
-import chrome from 'chrome-aws-lambda';
+// import chrome from 'chrome-aws-lambda';
 const exePath = process.platform === 'win32'
     ? 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
     : process.platform === 'linux'
@@ -15,16 +15,16 @@ export async function getOptions(isDev: boolean) {
     let options: Options;
     if (isDev) {
         options = {
-            args: ['--disable-web-security'],
+            args: ['--disable-web-security', '--no-sandbox'],
             executablePath: exePath,
             headless: true
         };
     } else {
         options = {
 
-            args: [...chrome.args, '--disable-web-security'],
-            executablePath: await chrome.executablePath,
-            headless: chrome.headless,
+            args: ['--disable-web-security', '--no-sandbox'],
+            executablePath: exePath,
+            headless: true,
         };
     }
     return options;
