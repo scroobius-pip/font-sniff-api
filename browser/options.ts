@@ -8,7 +8,7 @@ const exePath = process.platform === 'win32'
 interface Options {
     args: string[];
     // executablePath: string;
-    headless: boolean;
+    // headless: boolean;
 }
 
 export async function getOptions(isDev: boolean) {
@@ -17,14 +17,14 @@ export async function getOptions(isDev: boolean) {
         options = {
             args: ['--disable-web-security', '--no-sandbox'],
             // executablePath: exePath,
-            headless: true
+            // headless: true
         };
     } else {
         options = {
 
             args: ['--disable-web-security', '--no-sandbox'],
             // executablePath: exePath,
-            headless: true,
+            // headless: true,
         };
     }
     return options;
