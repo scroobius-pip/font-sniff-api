@@ -36,7 +36,7 @@ app.get('/', async (req, res) => {
 const start = async () => {
     try {
         const PORT = +process.env?.PORT ?? 3000
-        await app.listen(PORT)
+        await app.listen(PORT, '0.0.0.0')
         app.log.info(`server listening on ${(app as any).server.address().port}`)
 
     } catch (error) {
