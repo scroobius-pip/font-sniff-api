@@ -1,4 +1,4 @@
-import { launch, Page } from 'puppeteer-core'
+import { launch, Page } from 'puppeteer'
 import { getOptions } from './options'
 
 
