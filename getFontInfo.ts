@@ -153,7 +153,7 @@ async function mergeFontAndSrcMap(fontMap: FontMap, fontSrcMap: FontSrcMap) {
 
                 const fontSrc = selectFontSrc(srcObj)
 
-                const fontPath = fontSrc ? await convertFontToPath(fontSrc, 'Hello') : ''
+                const fontPath = await convertFontToPath(fontSrc, 'Hello')
 
 
                 return { src: srcObj, svg: fontPath }

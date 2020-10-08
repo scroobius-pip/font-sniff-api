@@ -3,6 +3,10 @@ const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 
 export default async (fontUrl: string, text: string): Promise<string> => {
+    if (!fontUrl) {
+        return ''
+    }
+    return ''
     try {
 
         const font = await opentype.load(fontUrl)
