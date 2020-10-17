@@ -149,7 +149,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                 return (() => {
                     const fontDatum = [] as FontData[]
                     fontMap.forEach((variants, fontName) => {
-                        const { parentPath = '', src = '' } = srcMap.get(fontName)
+                        const { parentPath, src } = srcMap.get(fontName) ?? { parentPath: '', src: '' }
                         const srcArray = extractFontUrls(src)
                         const srcObj = srcArray.reduce((srcObj, s) => {
                             const extension = getSrcExtension(s)

@@ -7,7 +7,7 @@ const exePath = process.platform === 'win32'
 
 interface Options {
     args: string[];
-    // executablePath: string;
+    executablePath?: string;
     headless: boolean;
 }
 
