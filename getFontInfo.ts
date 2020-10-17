@@ -4,9 +4,6 @@ import convertFontToPath from './convertFontToPath';
 import convertRelativeToAbsolute from './convertRelativeToAbsolute';
 
 type FontWeights = string[]
-interface FontMap {
-    [fontName: string]: FontWeights;
-}
 
 
 interface FontVariant {
