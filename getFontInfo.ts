@@ -44,7 +44,7 @@ enum SrcTypes {
 
 async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<FontObj> {
     const browser = await getBrowser(isDev);
-    await browser.goto(websiteUrl, { timeout: 0 });
+    await browser.goto(websiteUrl, { timeout: 0, waitUntil: 'domcontentloaded' });
 
     return await browser.evaluate(() => {
 
@@ -184,7 +184,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
         const fontMap = elements.reduce((map, element) => {
             const fontData = getElementFontData(element)
-            const elementName = element.tagName
+            const elementName = element.tagName.toLowerCase()
             if (map.has(elementName)) {
                 map.set(elementName, [...map.get(elementName), ...fontData])
             } else {
