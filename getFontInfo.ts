@@ -2,18 +2,21 @@ import * as getUrls from 'get-urls';
 import getBrowser from './browser';
 import convertFontToPath from './convertFontToPath';
 import convertRelativeToAbsolute from './convertRelativeToAbsolute';
+import isequal from 'lodash.isequal'
+import uniqwith from 'lodash.uniqwith'
 
 type FontWeights = string[]
 
 
 interface FontVariant {
-    fallbacks: string[]
+
     weight: string;
     lineHeight: string;
     size: string;
 }
 
 interface FontData {
+    fallbacks: string[]
     fontName: string
     src: SrcObj;
     variants: Array<FontVariant>;
@@ -62,7 +65,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
             return extension.length > 5 ? 'other' : extension;
         }
 
-        function extractFontUrls(s: string): string[] {
+        function extractFontUrls(s?: string): string[] {
             if (!s) return []
 
             const srcs = s.split(',');
@@ -120,10 +123,20 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
             return (element: Element): FontData[] => {
                 type FontName = string
-                const fontMap = new Map<FontName, Array<FontVariant>>();
+                const fontMap = new Map<FontName, Set<string>>();
+                const fallbackMap = new Map<FontName, string[]>()
 
-                const getFontVariant = ({ fontWeight, lineHeight, fontSize }: CSSStyleDeclaration, fallbacks: string[]): FontVariant => ({ lineHeight, size: fontSize, weight: fontWeight, fallbacks })
+                const getFontVariant = ({ fontWeight, lineHeight, fontSize }: CSSStyleDeclaration): FontVariant => ({ lineHeight, size: fontSize, weight: fontWeight })
+                const convertFontVariantToString = ({ lineHeight, size, weight }: FontVariant): string => `${lineHeight}|${size}|${weight}`
+                const convertStringToFontVariant = (string: string): FontVariant => {
+                    const [lineHeight, size, weight] = string.split('|')
+                    return {
+                        lineHeight,
+                        size,
+                        weight
+                    }
 
+                }
                 const pseudoElements = ['', ':before', ':after'];
 
                 pseudoElements.forEach(pseudo => {
@@ -136,11 +149,10 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
                     const [fontName, ...fallbacks] = elementStyle?.fontFamily.split(/\n*,\n*/g).map(tidyFontName)
 
-                    if (fontMap.has(fontName)) {
-                        fontMap.set(fontName, [...fontMap.get(fontName), getFontVariant(elementStyle, fallbacks)]);
-                    } else {
-                        fontMap.set(fontName, [getFontVariant(elementStyle, fallbacks)]);
-                    }
+                    const fontVariantSet = fontMap.get(fontName) ?? new Set<string>()
+
+                    fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
+                    fallbackMap.set(fontName, [...(fallbackMap.get(fontName) ?? []), ...fallbacks])
 
                 });
 
@@ -148,7 +160,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
                 return (() => {
                     const fontDatum = [] as FontData[]
-                    fontMap.forEach((variants, fontName) => {
+                    fontMap.forEach((variantStringSet, fontName) => {
                         const { parentPath, src } = srcMap.get(fontName) ?? { parentPath: '', src: '' }
                         const srcArray = extractFontUrls(src)
                         const srcObj = srcArray.reduce((srcObj, s) => {
@@ -156,7 +168,14 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                             srcObj[getSrcObjName(extension)] = convertRelativeToAbsolute(parentPath, s)
                             return srcObj
                         }, {} as SrcObj)
-                        fontDatum.push({ fontName, src: srcObj, variants })
+
+                        const variants: FontVariant[] = (() => {
+                            const arr = []
+                            variantStringSet.forEach((value) => { arr.push(convertStringToFontVariant(value)) })
+                            return arr
+                        })()
+
+                        fontDatum.push({ fontName, src: srcObj, variants, fallbacks: fallbackMap.get(fontName) ?? [] })
                     })
                     return fontDatum
                 })()
@@ -174,7 +193,6 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                 const elements = window.document.getElementsByTagName(t)
                 return Array.from(elements)
             }).flat()
-
         }
 
         const getParentPath = (url: string | null) => (url ?? '').substring(0, (url ?? '').lastIndexOf("/"));
