@@ -15,14 +15,14 @@ export async function getOptions(isDev: boolean) {
     if (isDev) {
         options = {
             args: ['--disable-web-security', '--no-sandbox'],
-            executablePath: exePath,
+            // executablePath: exePath,
             headless: true
         };
     } else {
         options = {
 
             args: ['--disable-web-security', '--no-sandbox'],
-            executablePath: exePath,
+            // executablePath: exePath,
             headless: true,
         };
     }
