@@ -22,8 +22,12 @@ interface FontData {
     variants: Array<FontVariant>;
 }
 
+interface ElementFontData {
+    [fontName: string]: FontData;
+}
+
 interface FontObj {
-    [elementName: string]: Array<FontData>
+    [elementName: string]: ElementFontData
 }
 
 
@@ -121,7 +125,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
         const initGetElementFontData = () => {
             const srcMap = getFontSrcMap(tidyFontName, getParentPath)
 
-            return (element: Element): FontData[] => {
+            return (element: Element): ElementFontData => {
                 type FontName = string
                 const fontMap = new Map<FontName, Set<string>>();
                 const fallbackMap = new Map<FontName, string[]>()
@@ -159,8 +163,9 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
 
 
-                return (() => {
-                    const fontDatum = [] as FontData[]
+                const value = (() => {
+                    let elementFontData = {} as ElementFontData
+
                     fontMap.forEach((variantStringSet, fontName) => {
                         const { parentPath, src } = srcMap.get(fontName) ?? { parentPath: '', src: '' }
                         const srcArray = extractFontUrls(src)
@@ -176,10 +181,34 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                             return arr
                         })()
 
-                        fontDatum.push({ fontName, src: srcObj, variants, fallbacks: fallbackMap.get(fontName) ?? [] })
+
+                        if (fontName in elementFontData) {
+                            elementFontData = {
+                                ...elementFontData,
+                                [fontName]: {
+                                    ...elementFontData[fontName],
+                                    variants: [...elementFontData[fontName].variants, ...variants],
+                                    src: { ...elementFontData[fontName].src, ...srcObj }
+                                }
+
+                            }
+                            return
+                        } else {
+                            elementFontData = {
+                                ...elementFontData,
+                                [fontName]: {
+                                    fallbacks: fallbackMap.get(fontName) ?? [],
+                                    fontName,
+                                    src: srcObj,
+                                    variants
+                                }
+                            }
+                        }
                     })
-                    return fontDatum
+                    return elementFontData
                 })()
+
+                return value
             }
         }
 
@@ -202,15 +231,44 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
         const getElementFontData = initGetElementFontData()
 
         const fontMap = elements.reduce((map, element) => {
-            const fontData = getElementFontData(element)
             const elementName = element.tagName.toLowerCase()
-            if (map.has(elementName)) {
-                map.set(elementName, [...map.get(elementName), ...fontData])
-            } else {
-                map.set(elementName, fontData)
-            }
+            const mergedElementFontData = ((): ElementFontData => {
+                let mergedData = {} as ElementFontData
+                const fontData = getElementFontData(element)
+                const currentFontData = map.get(elementName)
+
+                for (const fontName in Object.keys(fontData)) {
+                    if (fontName in currentFontData) {
+                        mergedData = {
+                            ...mergedData,
+                            [fontName]: {
+                                ...currentFontData[fontName],
+                                fontName,
+                                src: {
+                                    ...currentFontData[fontName].src,
+                                    ...fontData[fontName].src,
+                                },
+                                variants: {
+                                    ...currentFontData[fontName].variants,
+                                    ...fontData[fontName].variants,
+                                },
+                            }
+                        }
+                    } else {
+                        mergedData = {
+                            ...mergedData,
+                            [fontName]: fontData[fontName]
+                        }
+                    }
+                }
+
+                return { ...currentFontData, ...mergedData }
+
+            })()
+
+            map.set(elementName, mergedElementFontData)
             return map
-        }, new Map<string, Array<FontData>>())
+        }, new Map<string, ElementFontData>())
 
         return Object.fromEntries(fontMap)
     })
