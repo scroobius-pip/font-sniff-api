@@ -51,11 +51,20 @@ enum SrcTypes {
 
 async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<FontObj> {
     const browser = await getBrowser(isDev);
-    await browser.goto(websiteUrl, { timeout: 0, waitUntil: 'domcontentloaded' });
+    await browser.goto(websiteUrl, { timeout: 0, });
 
     return await browser.evaluate(() => {
 
+        const convertFontVariantToString = ({ lineHeight, size, weight }: FontVariant): string => `${lineHeight}|${size}|${weight}`
+        const convertStringToFontVariant = (string: string): FontVariant => {
+            const [lineHeight, size, weight] = string.split('|')
+            return {
+                lineHeight,
+                size,
+                weight
+            }
 
+        }
 
         const selectFontSrc = (font: SrcObj) => {
             return font?.ttf ?? font?.otf ?? font?.eot ?? font?.woff ?? font?.woff2 ?? Object.values(font)[0];
@@ -127,20 +136,11 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
             return (element: Element): ElementFontData => {
                 type FontName = string
-                const fontMap = new Map<FontName, Set<string>>();
+                const fontMap = new Map<FontName, Array<FontVariant>>();
                 const fallbackMap = new Map<FontName, string[]>()
 
                 const getFontVariant = ({ fontWeight, lineHeight, fontSize }: CSSStyleDeclaration): FontVariant => ({ lineHeight, size: fontSize, weight: fontWeight })
-                const convertFontVariantToString = ({ lineHeight, size, weight }: FontVariant): string => `${lineHeight}|${size}|${weight}`
-                const convertStringToFontVariant = (string: string): FontVariant => {
-                    const [lineHeight, size, weight] = string.split('|')
-                    return {
-                        lineHeight,
-                        size,
-                        weight
-                    }
 
-                }
                 const pseudoElements = ['', ':before', ':after'];
 
                 pseudoElements.forEach(pseudo => {
@@ -153,10 +153,11 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
                     const [fontName, ...fallbacks] = elementStyle?.fontFamily.split(/\n*,\n*/g).map(tidyFontName)
 
-                    const fontVariantSet = fontMap.get(fontName) ?? new Set<string>()
-                    fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
+                    const fontVariantArray = fontMap.get(fontName) ?? []
+                    fontVariantArray.push(getFontVariant(elementStyle))
+                    // fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
 
-                    fontMap.set(fontName, fontVariantSet)
+                    fontMap.set(fontName, fontVariantArray)
                     fallbackMap.set(fontName, [...(fallbackMap.get(fontName) ?? []), ...fallbacks])
 
                 });
@@ -166,20 +167,20 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                 const value = (() => {
                     let elementFontData = {} as ElementFontData
 
-                    fontMap.forEach((variantStringSet, fontName) => {
+                    fontMap.forEach((variants, fontName) => {
                         const { parentPath, src } = srcMap.get(fontName) ?? { parentPath: '', src: '' }
                         const srcArray = extractFontUrls(src)
                         const srcObj = srcArray.reduce((srcObj, s) => {
                             const extension = getSrcExtension(s)
-                            srcObj[getSrcObjName(extension)] = convertRelativeToAbsolute(parentPath, s)
+                            // srcObj[getSrcObjName(extension)] = convertRelativeToAbsolute(parentPath, s)
                             return srcObj
                         }, {} as SrcObj)
 
-                        const variants: FontVariant[] = (() => {
-                            const arr = []
-                            variantStringSet.forEach((value) => { arr.push(convertStringToFontVariant(value)) })
-                            return arr
-                        })()
+                        // const variants: FontVariant[] = (() => {
+                        //     const arr = []
+                        //     variantStringSet.forEach((value) => { arr.push(convertStringToFontVariant(value)) })
+                        //     return arr
+                        // })()
 
 
                         if (fontName in elementFontData) {
@@ -187,8 +188,8 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                                 ...elementFontData,
                                 [fontName]: {
                                     ...elementFontData[fontName],
-                                    variants: [...elementFontData[fontName].variants, ...variants],
-                                    src: { ...elementFontData[fontName].src, ...srcObj }
+                                    variants: [...elementFontData[fontName]?.variants, ...variants],
+                                    src: { ...elementFontData[fontName]?.src, ...srcObj }
                                 }
 
                             }
@@ -235,9 +236,9 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
             const mergedElementFontData = ((): ElementFontData => {
                 let mergedData = {} as ElementFontData
                 const fontData = getElementFontData(element)
-                const currentFontData = map.get(elementName)
+                const currentFontData = map.get(elementName) ?? {}
 
-                for (const fontName in Object.keys(fontData)) {
+                for (const fontName in fontData) {
                     if (fontName in currentFontData) {
                         mergedData = {
                             ...mergedData,
@@ -245,13 +246,13 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                                 ...currentFontData[fontName],
                                 fontName,
                                 src: {
-                                    ...currentFontData[fontName].src,
-                                    ...fontData[fontName].src,
+                                    ...currentFontData[fontName]?.src,
+                                    ...fontData[fontName]?.src,
                                 },
-                                variants: {
-                                    ...currentFontData[fontName].variants,
-                                    ...fontData[fontName].variants,
-                                },
+                                variants: [
+                                    ...currentFontData[fontName]?.variants,
+                                    ...fontData[fontName]?.variants,
+                                ],
                             }
                         }
                     } else {
@@ -262,7 +263,22 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                     }
                 }
 
-                return { ...currentFontData, ...mergedData }
+                mergedData = { ...currentFontData, ...mergedData }
+
+                for (const fontName in mergedData) {
+                    mergedData = {
+                        ...mergedData,
+                        [fontName]: {
+                            ...mergedData[fontName],
+                            fallbacks: Array.from(new Set(mergedData[fontName].fallbacks)),
+                            variants: Array.from(new Set(mergedData[fontName].variants.map(convertFontVariantToString))).map(convertStringToFontVariant)
+                        }
+                    }
+                }
+
+
+
+                return mergedData
 
             })()
 

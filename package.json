@@ -14,7 +14,6 @@
     "@types/lodash.isequal": "^4.5.5",
     "@types/lodash.uniqwith": "^4.5.6",
     "@types/puppeteer-core": "^2.0.0",
-    "cheerio": "^1.0.0-rc.3",
     "fastify": "^3.5.0",
     "get-urls": "^10.0.0",
     "jsdom": "^16.4.0",

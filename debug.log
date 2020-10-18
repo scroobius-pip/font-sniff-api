@@ -3,3 +3,7 @@
 [0926/203134.595:ERROR:file_io_win.cc(171)] CreateFile C:\Users\sim04\AppData\Local\Temp\puppeteer_dev_chrome_profile-NzggW8\Crashpad\reports\b04d5b96-e268-4277-9510-f1d65038a853.dmp: The system cannot find the path specified. (0x3)
 [0926/203134.595:ERROR:crash_report_exception_handler.cc(97)] PrepareNewCrashReport failed
 [1017/223314.699:ERROR:directory_reader_win.cc(43)] FindFirstFile: The system cannot find the path specified. (0x3)
+[1018/191444.732:ERROR:directory_reader_win.cc(43)] FindFirstFile: The system cannot find the path specified. (0x3)
+[1018/215409.068:ERROR:directory_reader_win.cc(43)] FindFirstFile: The system cannot find the path specified. (0x3)
+[1018/223301.265:ERROR:directory_reader_win.cc(43)] FindFirstFile: The system cannot find the path specified. (0x3)
+[1018/224944.013:ERROR:directory_reader_win.cc(43)] FindFirstFile: The system cannot find the path specified. (0x3)
