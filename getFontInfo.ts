@@ -150,8 +150,9 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                     const [fontName, ...fallbacks] = elementStyle?.fontFamily.split(/\n*,\n*/g).map(tidyFontName)
 
                     const fontVariantSet = fontMap.get(fontName) ?? new Set<string>()
-
                     fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
+
+                    fontMap.set(fontName, fontVariantSet)
                     fallbackMap.set(fontName, [...(fallbackMap.get(fontName) ?? []), ...fallbacks])
 
                 });
