@@ -59,7 +59,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
         const convertStringToFontVariant = (string: string): FontVariant => {
             const [lineHeight, size, weight] = string.split('|')
             return {
-                lineHeight,
+                lineHeight: lineHeight === 'normal' ? '1.2' : lineHeight,
                 size,
                 weight
             }
