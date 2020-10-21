@@ -5,7 +5,7 @@ import getFontInfo from './getFontInfo';
 const app = fastify({ logger: true })
 
 const isDev = !!process.env?.DEV
-
+app.register(require('fastify-cors'))
 app.get('/', async (req, res) => {
 
 
