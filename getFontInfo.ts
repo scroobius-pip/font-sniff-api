@@ -225,7 +225,12 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
 
         function tidyFontName(font: string) {
-            return font.replace(/^\s*['"]([^'"]*)['"]\s*$/, '$1').trim();
+            const trimmed = font.replace(/^\s*['"]([^'"]*)['"]\s*$/, '$1').trim();
+            return capitalizeFirstLetters(trimmed)
+        }
+
+        function capitalizeFirstLetters(font: string) {
+            return font.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
         }
 
         function getAllNodes() {
