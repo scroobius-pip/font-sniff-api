@@ -295,9 +295,10 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
             map.set(elementName, mergedElementFontData)
             return map
         }, new Map<string, ElementFontData>())
-
+        browser.close()
         return Object.fromEntries(fontMap)
     })
+
 }
 
 export default async (websiteUrl: string, isDev: boolean) => await getFontAndSrcMaps(websiteUrl, isDev)
