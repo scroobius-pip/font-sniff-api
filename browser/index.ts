@@ -1,20 +1,15 @@
-import { launch, Page } from 'puppeteer'
+import { launch, Page, connect } from 'puppeteer-core'
 import { getOptions } from './options'
 
-
+const startupFlags = ['--disable-web-security', '--no-sandbox']
 
 
 export default async (isDev: boolean) => {
-    const options = await getOptions(isDev)
-    const page = await (await launch(options)).newPage()
-    await page.setRequestInterception(true)
-    // page.on('console', consoleObj => console.log(consoleObj.text()));
+    const browser = await connect({
+        browserWSEndpoint: `wss://chrome.headlesstesting.com?token=12DC153B3DC3FB37D2&startupFlags=${JSON.stringify(startupFlags)}`,
 
-    page.on('request', req => {
-        ['image', 'media', 'websocket', 'manifest'].includes(req.resourceType()) ?
-            req.abort()
-            : req.continue()
     })
 
-    return page
+    return browser
+
 }

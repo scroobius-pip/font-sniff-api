@@ -50,10 +50,20 @@ enum SrcTypes {
 
 
 async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<FontObj> {
-    const browser = await getBrowser(isDev);
-    await browser.goto(websiteUrl, { timeout: 0, });
 
-    return await browser.evaluate(() => {
+
+    const browser = await getBrowser(isDev);
+    const page = await browser.newPage()
+    await page.setRequestInterception(true)
+    page.on('request', req => {
+        ['image', 'media', 'websocket', 'manifest'].includes(req.resourceType()) ?
+            req.abort()
+            : req.continue()
+    })
+
+    await page.goto(websiteUrl, { timeout: 0, });
+
+    return await page.evaluate(() => {
 
         const convertFontVariantToString = ({ lineHeight, size, weight }: FontVariant): string => `${lineHeight}|${size}|${weight}`
         const convertStringToFontVariant = (string: string): FontVariant => {
