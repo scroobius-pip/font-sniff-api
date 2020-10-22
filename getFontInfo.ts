@@ -54,6 +54,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
 
 
     const page = await browser.newPage()
+
     await page.setRequestInterception(true)
     page.on('request', req => {
         ['image', 'media', 'websocket', 'manifest'].includes(req.resourceType()) ?
@@ -304,6 +305,8 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             return map
         }, new Map<string, ElementFontData>())
         // browser.close()
+        page.close()
+
         return {
             fontInfo: Object.fromEntries(fontMap),
             count: fontNameSet.size

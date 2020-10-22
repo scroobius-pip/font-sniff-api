@@ -11,6 +11,7 @@ app.register(require('fastify-cors'))
 
 app.get('/', async (req, res) => {
 
+    const browser = await getBrowser(isDev);
 
     try {
         const url = (req as any).query?.url
@@ -20,10 +21,10 @@ app.get('/', async (req, res) => {
                 error: 'No Url Specified'
             }
         }
-        const browser = await getBrowser(isDev);
 
         const { fontInfo, count } = await getFontInfo(normalizeUrl(url), isDev, browser)
         res.header('Cache-Control', 's-maxage=86400, stale-while-revalidate')
+
         return ({
             fontInfo,
             count,
@@ -35,6 +36,8 @@ app.get('/', async (req, res) => {
         return ({
             error: "There was an issue getting this website's fonts."
         })
+    } finally {
+        // await browser.close()
     }
 
 })
