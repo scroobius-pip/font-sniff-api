@@ -8,7 +8,6 @@ import getBrowser from './browser';
 const isDev = !!process.env?.DEV
 app.register(require('fastify-cors'))
 
-const browser = getBrowser(isDev);
 
 app.get('/', async (req, res) => {
 
@@ -21,10 +20,13 @@ app.get('/', async (req, res) => {
                 error: 'No Url Specified'
             }
         }
-        const fontInfo = await getFontInfo(normalizeUrl(url), isDev, await browser)
+        const browser = await getBrowser(isDev);
+
+        const { fontInfo, count } = await getFontInfo(normalizeUrl(url), isDev, browser)
         res.header('Cache-Control', 's-maxage=86400, stale-while-revalidate')
         return ({
             fontInfo,
+            count,
             error: ''
         })
 

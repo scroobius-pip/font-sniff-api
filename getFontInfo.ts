@@ -50,7 +50,7 @@ enum SrcTypes {
 
 
 
-async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Browser): Promise<FontObj> {
+async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Browser): Promise<{ fontInfo: FontObj, count: number }> {
 
 
     const page = await browser.newPage()
@@ -60,16 +60,17 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             req.abort()
             : req.continue()
     })
+    page.on('console', consoleObj => console.log(consoleObj.text()));
 
     await page.goto(websiteUrl, { timeout: 0, });
 
     return await page.evaluate(() => {
 
-        const convertFontVariantToString = ({ lineHeight, size, weight }: FontVariant): string => `${lineHeight}|${size}|${weight}`
+        const convertFontVariantToString = ({ lineHeight, size, weight }: FontVariant): string => `${normalizeLineHeight(lineHeight)}|${size}|${weight}`
         const convertStringToFontVariant = (string: string): FontVariant => {
             const [lineHeight, size, weight] = string.split('|')
             return {
-                lineHeight: lineHeight === 'normal' ? '1.2' : lineHeight,
+                lineHeight: normalizeLineHeight(lineHeight),
                 size,
                 weight
             }
@@ -78,6 +79,10 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
 
         const selectFontSrc = (font: SrcObj) => {
             return font?.ttf ?? font?.otf ?? font?.eot ?? font?.woff ?? font?.woff2 ?? Object.values(font)[0];
+        }
+
+        function normalizeLineHeight(lineHeight: string): string {
+            return lineHeight === 'normal' ? '1.2' : lineHeight;
         }
 
         function getSrcExtension(s: string) {
@@ -241,15 +246,17 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
 
         const elements = getAllNodes();
         const getElementFontData = initGetElementFontData()
-
+        const fontNameSet = new Set<string>()
         const fontMap = elements.reduce((map, element) => {
             const elementName = element.tagName.toLowerCase()
             const mergedElementFontData = ((): ElementFontData => {
                 let mergedData = {} as ElementFontData
                 const fontData = getElementFontData(element)
+
                 const currentFontData = map.get(elementName) ?? {}
 
                 for (const fontName in fontData) {
+                    fontNameSet.add(fontName)
                     if (fontName in currentFontData) {
                         mergedData = {
                             ...mergedData,
@@ -297,8 +304,13 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             return map
         }, new Map<string, ElementFontData>())
         // browser.close()
-        return Object.fromEntries(fontMap)
+        return {
+            fontInfo: Object.fromEntries(fontMap),
+            count: fontNameSet.size
+        }
     })
+
+
 
 }
 
