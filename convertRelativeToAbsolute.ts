@@ -17,4 +17,6 @@ function convertRelativeToAbsolute(base_url: string, currentUrl: string) {
     }
 }
 
+
+
 export default convertRelativeToAbsolute

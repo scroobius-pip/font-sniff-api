@@ -3,9 +3,13 @@ import * as normalizeUrl from 'normalize-url';
 import getFontInfo from './getFontInfo';
 // import { api } from './api'
 const app = fastify({ logger: true })
+import getBrowser from './browser';
 
 const isDev = !!process.env?.DEV
 app.register(require('fastify-cors'))
+
+const browser = getBrowser(isDev);
+
 app.get('/', async (req, res) => {
 
 
@@ -17,7 +21,7 @@ app.get('/', async (req, res) => {
                 error: 'No Url Specified'
             }
         }
-        const fontInfo = await getFontInfo(normalizeUrl(url), isDev)
+        const fontInfo = await getFontInfo(normalizeUrl(url), isDev, await browser)
         res.header('Cache-Control', 's-maxage=86400, stale-while-revalidate')
         return ({
             fontInfo,

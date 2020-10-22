@@ -4,6 +4,7 @@ import convertFontToPath from './convertFontToPath';
 import convertRelativeToAbsolute from './convertRelativeToAbsolute';
 import isequal from 'lodash.isequal'
 import uniqwith from 'lodash.uniqwith'
+import { Browser } from 'puppeteer-core';
 
 type FontWeights = string[]
 
@@ -49,10 +50,9 @@ enum SrcTypes {
 
 
 
-async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<FontObj> {
+async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Browser): Promise<FontObj> {
 
 
-    const browser = await getBrowser(isDev);
     const page = await browser.newPage()
     await page.setRequestInterception(true)
     page.on('request', req => {
@@ -182,15 +182,11 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
                         const srcArray = extractFontUrls(src)
                         const srcObj = srcArray.reduce((srcObj, s) => {
                             const extension = getSrcExtension(s)
-                            // srcObj[getSrcObjName(extension)] = convertRelativeToAbsolute(parentPath, s)
+                            srcObj[getSrcObjName(extension)] = new URL(s, parentPath).href
                             return srcObj
                         }, {} as SrcObj)
 
-                        // const variants: FontVariant[] = (() => {
-                        //     const arr = []
-                        //     variantStringSet.forEach((value) => { arr.push(convertStringToFontVariant(value)) })
-                        //     return arr
-                        // })()
+
 
 
                         if (fontName in elementFontData) {
@@ -306,4 +302,4 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean): Promise<Fo
 
 }
 
-export default async (websiteUrl: string, isDev: boolean) => await getFontAndSrcMaps(websiteUrl, isDev)
+export default async (websiteUrl: string, isDev: boolean, browser: Browser) => await getFontAndSrcMaps(websiteUrl, isDev, browser)
