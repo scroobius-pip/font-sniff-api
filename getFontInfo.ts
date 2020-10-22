@@ -305,7 +305,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             return map
         }, new Map<string, ElementFontData>())
         // browser.close()
-        page.close()
+        // page.close()
 
         return {
             fontInfo: Object.fromEntries(fontMap),
