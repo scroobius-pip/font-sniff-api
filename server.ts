@@ -37,7 +37,10 @@ app.get('/', async (req, res) => {
             error: "There was an issue getting this website's fonts."
         })
     } finally {
-        // await browser.close()
+        if (browser) {
+            browser.close()
+        }
+
     }
 
 })
