@@ -188,7 +188,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
                         const srcArray = extractFontUrls(src)
                         const srcObj = srcArray.reduce((srcObj, s) => {
                             const extension = getSrcExtension(s)
-                            srcObj[getSrcObjName(extension)] = new URL(s, parentPath).href
+                            srcObj[getSrcObjName(extension)] = joinBaseUrl(s, parentPath)
                             return srcObj
                         }, {} as SrcObj)
 
@@ -234,7 +234,14 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
         function capitalizeFirstLetters(font: string) {
             return font.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
         }
-
+        function joinBaseUrl(s: string, parentPath: string): any {
+            try {
+                return new URL(s, parentPath).href;
+            } catch (error) {
+                console.log(`could not join url ${s} ${parentPath}`)
+                return s
+            }
+        }
         function getAllNodes() {
             const tagNames = ['p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'a', 'button', 'strong',]
             return tagNames.map(t => {
@@ -312,6 +319,8 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             count: fontNameSet.size
         }
     })
+
+
 
 
 
