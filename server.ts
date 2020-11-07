@@ -23,8 +23,10 @@ app.get('/', async (req, res) => {
         }
 
         const { fontInfo, count } = await getFontInfo(normalizeUrl(url), isDev, browser)
-        res.header('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400')
-
+        // res.header('Cache-Control', 's-maxage=86400, stale-while-revalidate=1400', 'max-age=86400')
+        res.headers({
+            'Cache-Control': 'public, s-maxage=86400, max-age=86400, stale-while-revalidate=1400',
+        })
         return ({
             fontInfo,
             count,
