@@ -25,7 +25,7 @@ app.get('/', async (req, res) => {
         const { fontInfo, count } = await getFontInfo(normalizeUrl(url), isDev, browser)
         // res.header('Cache-Control', 's-maxage=86400, stale-while-revalidate=1400', 'max-age=86400')
         res.headers({
-            'Cache-Control': 'public, s-maxage=86400, max-age=86400, stale-while-revalidate=1400',
+            'Cache-Control': 'public, s-maxage=259200, max-age=259200, stale-while-revalidate=1400, stale-if-error=259200',
         })
         return ({
             fontInfo,
@@ -35,6 +35,7 @@ app.get('/', async (req, res) => {
 
     } catch (error) {
         console.error(error)
+        res.status(500)
         return ({
             error: "There was an issue getting this website's fonts."
         })
