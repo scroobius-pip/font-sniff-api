@@ -250,7 +250,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             }).flat()
         }
 
-        const getParentPath = (url: string | null) => (url ?? '').substring(0, (url ?? '').lastIndexOf("/"));
+        const getParentPath = (url: string | null) => url
 
         const elements = getAllNodes();
         const getElementFontData = initGetElementFontData()
