@@ -82,6 +82,15 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             return font?.ttf ?? font?.otf ?? font?.eot ?? font?.woff ?? font?.woff2 ?? Object.values(font)[0];
         }
 
+        function inBlackList(fontName: string,): boolean {
+            const blacklist = ['icon', 'slick', 'awesome']
+            const lowerFontName = fontName.toLowerCase()
+
+            return blacklist.some((value) => {
+                return lowerFontName.includes(value)
+            })
+        }
+
         function normalizeLineHeight(lineHeight: string): string {
             return lineHeight === 'normal' ? '1.2' : lineHeight;
         }
@@ -172,6 +181,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
                     const fontVariantArray = fontMap.get(fontName) ?? []
                     fontVariantArray.push(getFontVariant(elementStyle))
                     // fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
+                    if (inBlackList(fontName)) return
 
                     fontMap.set(fontName, fontVariantArray)
                     fallbackMap.set(fontName, [...(fallbackMap.get(fontName) ?? []), ...fallbacks])
