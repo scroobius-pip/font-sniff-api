@@ -83,7 +83,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
         }
 
         function inBlackList(fontName: string,): boolean {
-            const blacklist = ['icon', 'slick', 'awesome']
+            const blacklist = ['icon', 'slick', 'awesome', 'etmodules']
             const lowerFontName = fontName.toLowerCase()
 
             return blacklist.some((value) => {
