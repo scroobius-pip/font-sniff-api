@@ -155,6 +155,22 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             return map;
         }
 
+        function getFontNamesAndFallbacks(fontFamily: string[]): [string[], string, string] {
+            //returns a font name, an apple version and fallbacks
+
+            const appleFonts = ['-apple-system', 'BlinkMacSystemFont']
+
+
+            const appleFont = fontFamily.filter((fontName) => appleFonts.includes(fontName))[0]
+            const universalFont = fontFamily.filter((fontName) => !appleFonts.includes(fontName))[0]
+            const fallbacks = fontFamily.filter((fontName) => ![appleFont, universalFont].includes(fontName))
+
+            return [
+                fallbacks,
+                appleFont,
+                universalFont,
+            ]
+        }
 
         const initGetElementFontData = () => {
             const srcMap = getFontSrcMap(tidyFontName, getParentPath)
@@ -176,15 +192,22 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
                     if (!elementStyle?.fontFamily)
                         return
 
-                    const [fontName, ...fallbacks] = elementStyle?.fontFamily.split(/\n*,\n*/g).map(tidyFontName)
+                    const splitFontFamily = elementStyle?.fontFamily.split(/\n*,\n*/g).map(tidyFontName) ?? []
 
-                    const fontVariantArray = fontMap.get(fontName) ?? []
-                    fontVariantArray.push(getFontVariant(elementStyle))
-                    // fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
-                    if (inBlackList(fontName)) return
+                    const [fallbacks, ...fontNames] = getFontNamesAndFallbacks(splitFontFamily)
 
-                    fontMap.set(fontName, fontVariantArray)
-                    fallbackMap.set(fontName, [...(fallbackMap.get(fontName) ?? []), ...fallbacks])
+
+                    for (const fontName of fontNames) {
+                        if (!fontName) continue
+
+                        const fontVariantArray = fontMap.get(fontName) ?? []
+                        fontVariantArray.push(getFontVariant(elementStyle))
+                        // fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
+                        if (inBlackList(fontName)) return
+
+                        fontMap.set(fontName, fontVariantArray)
+                        fallbackMap.set(fontName, [...(fallbackMap.get(fontName) ?? []), ...fallbacks])
+                    }
 
                 });
 
