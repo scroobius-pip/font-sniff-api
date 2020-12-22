@@ -1,10 +1,8 @@
-import { launch, Page, connect } from 'puppeteer-core'
-import { getOptions } from './options'
+import { connect } from 'puppeteer-core'
 const apiKey = process.env?.BROWSERLESS_KEY
-const startupFlags = ['--disable-web-security', '--no-sandbox']
 
 
-export default async (isDev: boolean) => {
+export default async () => {
     try {
 
 
@@ -15,6 +13,7 @@ export default async (isDev: boolean) => {
 
         return browser
     } catch (error) {
+        console.error(error)
         console.log('Could not get browser')
         throw 'Could not get browser'
     }

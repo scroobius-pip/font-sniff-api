@@ -1,6 +1,8 @@
 import fastify from 'fastify';
 import * as normalizeUrl from 'normalize-url';
 import getFontInfo from './getFontInfo';
+require('dotenv').config()
+
 // import { api } from './api'
 const app = fastify({ logger: true })
 import getBrowser from './browser';
@@ -11,7 +13,7 @@ app.register(require('fastify-cors'))
 
 app.get('/', async (req, res) => {
 
-    const browser = await getBrowser(isDev);
+    const browser = await getBrowser();
 
     try {
         const url = (req as any).query?.url
