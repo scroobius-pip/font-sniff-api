@@ -8,7 +8,9 @@ import { Browser } from 'puppeteer-core';
 
 type FontWeights = string[]
 
-
+type FontName = string
+type FontSrc = { src: any; parentPath: string; }
+type SrcMap = Map<FontName, FontSrc>
 interface FontVariant {
 
     weight: string;
@@ -121,7 +123,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             type FontName = string
             type FontSrc = { src: any; parentPath: string; }
 
-            const map = new Map<FontName, FontSrc>();
+            const map = new Map() as SrcMap;
 
             const documentStylesheets = [...document.styleSheets];
             documentStylesheets.forEach(documentStylesheet => {
@@ -155,20 +157,30 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             return map;
         }
 
-        function getFontNamesAndFallbacks(fontFamily: string[]): [string[], string, string] {
+        function getFontNamesAndFallbacks(fontFamily: string[], srcMap: SrcMap): [string[], string, string] {
             //returns a font name, an apple version and fallbacks
 
             const appleFonts = ['-apple-system', 'BlinkMacSystemFont']
 
 
             const appleFont = fontFamily.filter((fontName) => appleFonts.includes(fontName))[0]
-            const universalFont = fontFamily.filter((fontName) => !appleFonts.includes(fontName))[0]
-            const fallbacks = fontFamily.filter((fontName) => ![appleFont, universalFont].includes(fontName))
+            const universalFonts = fontFamily.filter((fontName) => !appleFonts.includes(fontName))
+
+
+            const chosenUniversalFont = (() => {
+                for (const universalFont of universalFonts) {
+                    if (srcMap.has(universalFont)) {
+                        return universalFont
+                    }
+                }
+            })()
+
+            const fallbacks = fontFamily.filter((fontName) => ![appleFont, chosenUniversalFont].includes(fontName))
 
             return [
                 fallbacks,
                 appleFont,
-                universalFont,
+                chosenUniversalFont,
             ]
         }
 
@@ -194,7 +206,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
 
                     const splitFontFamily = elementStyle?.fontFamily.split(/\n*,\n*/g).map(tidyFontName) ?? []
 
-                    const [fallbacks, ...fontNames] = getFontNamesAndFallbacks(splitFontFamily)
+                    const [fallbacks, ...fontNames] = getFontNamesAndFallbacks(splitFontFamily, srcMap)
 
 
                     for (const fontName of fontNames) {
@@ -202,7 +214,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
 
                         const fontVariantArray = fontMap.get(fontName) ?? []
                         fontVariantArray.push(getFontVariant(elementStyle))
-                        // fontVariantSet.add(convertFontVariantToString(getFontVariant(elementStyle)))
+
                         if (inBlackList(fontName)) return
 
                         fontMap.set(fontName, fontVariantArray)
