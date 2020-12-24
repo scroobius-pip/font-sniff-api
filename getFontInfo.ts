@@ -233,7 +233,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
                         const srcArray = extractFontUrls(src)
                         const srcObj = srcArray.reduce((srcObj, s) => {
                             const extension = getSrcExtension(s)
-                            srcObj[getSrcObjName(extension)] = joinBaseUrl(s, parentPath ?? websiteUrl)
+                            srcObj[getSrcObjName(extension)] = joinBaseUrl(s, parentPath ?? window.location.href)
                             return srcObj
                         }, {} as SrcObj)
 
