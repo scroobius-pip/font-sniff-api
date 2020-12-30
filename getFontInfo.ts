@@ -120,38 +120,39 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
         };
 
         function getFontSrcMap(tidyFontName: (font: string) => string, getParentPath: (url: string) => string) {
-            type FontName = string
-            type FontSrc = { src: any; parentPath: string; }
 
             const map = new Map() as SrcMap;
 
             const documentStylesheets = [...document.styleSheets];
+
+            const getCssRules = (cssRule: CSSRule) => {
+
+                if (cssRule instanceof CSSFontFaceRule) {
+                    map.set(tidyFontName(cssRule.style.fontFamily), {
+                        src: ((cssRule as any).style?.src) as string,
+                        parentPath: getParentPath(cssRule.parentStyleSheet.href)
+                    });
+                    return
+                }
+
+                if (cssRule instanceof CSSMediaRule) {
+                    const nestedCssRules = [...cssRule.cssRules]
+                    nestedCssRules.forEach(getCssRules)
+                    return
+                }
+
+                if (cssRule instanceof CSSImportRule) {
+                    const nestedStylesheet = cssRule.styleSheet
+                    const nestedCssRules = [...nestedStylesheet.cssRules]
+                    nestedCssRules.forEach(getCssRules)
+                    return
+                }
+
+            }
+
             documentStylesheets.forEach(documentStylesheet => {
                 const cssRules = [...documentStylesheet.cssRules];
-
-
-                cssRules.forEach(cssRule => {
-                    if (cssRule instanceof CSSFontFaceRule) {
-
-                        map.set(tidyFontName(cssRule.style.fontFamily), {
-                            src: ((cssRule as any).style?.src) as string,
-                            parentPath: getParentPath(cssRule.parentStyleSheet.href)
-                        });
-                    }
-
-                    if (cssRule instanceof CSSImportRule) {
-                        const nestedStylesheet = cssRule.styleSheet;
-                        const nestedCssRules = [...nestedStylesheet.cssRules];
-                        nestedCssRules.forEach(rule => {
-                            if (rule instanceof CSSFontFaceRule) {
-                                map.set(tidyFontName(rule.style.fontFamily), {
-                                    src: ((rule as any).style?.src) as string,
-                                    parentPath: getParentPath(rule.parentStyleSheet.href)
-                                });
-                            }
-                        });
-                    }
-                });
+                cssRules.forEach(getCssRules);
             });
 
             return map;
