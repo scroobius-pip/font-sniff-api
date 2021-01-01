@@ -174,6 +174,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
                         return universalFont
                     }
                 }
+                return universalFonts[0]
             })()
 
             const fallbacks = fontFamily.filter((fontName) => ![appleFont, chosenUniversalFont].includes(fontName))
