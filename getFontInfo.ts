@@ -290,7 +290,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             }
         }
         function getAllNodes() {
-            const tagNames = ['p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'a', 'button', 'strong',]
+            const tagNames = ['p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'a', 'button', 'strong','body']
             return tagNames.map(t => {
                 const elements = window.document.getElementsByTagName(t)
                 return Array.from(elements)
