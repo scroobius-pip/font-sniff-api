@@ -126,27 +126,32 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             const documentStylesheets = [...document.styleSheets];
 
             const getCssRules = (cssRule: CSSRule) => {
+                try {
+                    if (cssRule instanceof CSSFontFaceRule) {
+                        map.set(tidyFontName(cssRule.style.fontFamily), {
+                            src: ((cssRule as any).style?.src) as string,
+                            parentPath: getParentPath(cssRule.parentStyleSheet.href)
+                        });
+                        return
+                    }
 
-                if (cssRule instanceof CSSFontFaceRule) {
-                    map.set(tidyFontName(cssRule.style.fontFamily), {
-                        src: ((cssRule as any).style?.src) as string,
-                        parentPath: getParentPath(cssRule.parentStyleSheet.href)
-                    });
-                    return
+                    if (cssRule instanceof CSSMediaRule) {
+                        const nestedCssRules = [...cssRule.cssRules]
+                        nestedCssRules.forEach(getCssRules)
+                        return
+                    }
+
+                    if (cssRule instanceof CSSImportRule) {
+                        const nestedStylesheet = cssRule.styleSheet
+                        const nestedCssRules = [...nestedStylesheet.cssRules]
+                        nestedCssRules.forEach(getCssRules)
+                        return
+                    }
+                } catch (error) {
+                    console.error(error)
+                    console.log('continuing')
                 }
 
-                if (cssRule instanceof CSSMediaRule) {
-                    const nestedCssRules = [...cssRule.cssRules]
-                    nestedCssRules.forEach(getCssRules)
-                    return
-                }
-
-                if (cssRule instanceof CSSImportRule) {
-                    const nestedStylesheet = cssRule.styleSheet
-                    const nestedCssRules = [...nestedStylesheet.cssRules]
-                    nestedCssRules.forEach(getCssRules)
-                    return
-                }
 
             }
 
@@ -290,7 +295,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             }
         }
         function getAllNodes() {
-            const tagNames = ['p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'a', 'button', 'strong','body']
+            const tagNames = ['p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'a', 'button', 'strong', 'body']
             return tagNames.map(t => {
                 const elements = window.document.getElementsByTagName(t)
                 return Array.from(elements)

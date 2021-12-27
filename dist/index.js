@@ -43526,7 +43526,7 @@ var apiKey = (_a = process.env) == null ? void 0 : _a.BROWSERLESS_KEY;
 var browser_default = async () => {
   try {
     const browser = await (0, import_puppeteer_core.connect)({
-      browserWSEndpoint: `wss://chrome.browserless.io?token=${apiKey}&blockAds&--disable-web-security&--no-sandbox`
+      browserWSEndpoint: `wss://chrome.browserless.io?token=${"cdae34bf-86b2-495c-9695-3747d0d49737"}&blockAds&--disable-web-security&--no-sandbox`
     });
     return browser;
   } catch (error) {

@@ -12,7 +12,7 @@ interface Options {
 
 export async function getOptions(isDev: boolean) {
     let options: Options;
-    if (isDev) {
+    if (isDev) { 
         options = {
             args: ['--disable-web-security', '--no-sandbox'],
             // executablePath: exePath,
