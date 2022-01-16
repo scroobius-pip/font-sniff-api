@@ -156,7 +156,7 @@ async function getFontAndSrcMaps(websiteUrl: string, isDev: boolean, browser: Br
             }
 
             documentStylesheets.forEach(documentStylesheet => {
-                const cssRules = [...documentStylesheet.cssRules];
+                const cssRules = [...documentStylesheet?.cssRules];
                 cssRules.forEach(getCssRules);
             });
 
